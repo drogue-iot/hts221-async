@@ -1,0 +1,11 @@
+[package]
+name = "hts221-async"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+embedded-hal-async = "0.1.0-alpha.3"
+defmt = { version = "0.3", optional = true }
+log = { version = "0.4", optional = true }
