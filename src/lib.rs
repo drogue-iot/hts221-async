@@ -10,7 +10,6 @@ use core::{
     ops::{Add, Div, Sub},
 };
 use embedded_hal_async::i2c::*;
-use register::who_am_i::WhoAmI;
 use register::{
     calibration::*,
     ctrl1::{BlockDataUpdate, Ctrl1, OutputDataRate},

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use super::super::I2cAddress;
 use embedded_hal_async::i2c::*;
 
