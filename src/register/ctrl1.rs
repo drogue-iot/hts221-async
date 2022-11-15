@@ -4,7 +4,7 @@ use embedded_hal_async::i2c::*;
 const CTRL_REG1: u8 = 0x20;
 
 #[derive(Debug, Copy, Clone)]
-pub enum Power {
+enum Power {
     PowerDown,
     Active,
 }
@@ -24,7 +24,7 @@ pub enum OutputDataRate {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Ctrl1 {
+pub(crate) struct Ctrl1 {
     power_down: Power,
     block_data_update: BlockDataUpdate,
     output_data_rate: OutputDataRate,
@@ -58,6 +58,7 @@ impl Ctrl1 {
         Self::write(address.into(), i2c, reg).await
     }
 
+    #[allow(dead_code)]
     pub fn power_down(&mut self) -> &Self {
         self.power_down = Power::PowerDown;
         self

@@ -3,7 +3,7 @@ use embedded_hal_async::i2c::*;
 
 const WHO_AM_I: u8 = 0x0F;
 
-pub struct WhoAmI;
+pub(crate) struct WhoAmI;
 
 impl WhoAmI {
     pub async fn read<I: I2c>(address: I2cAddress, i2c: &mut I) -> Result<I2cAddress, I::Error> {

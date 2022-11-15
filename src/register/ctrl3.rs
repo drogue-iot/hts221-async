@@ -22,7 +22,7 @@ pub struct Ctrl3 {
 }
 
 impl Ctrl3 {
-    pub async fn read<I: I2c>(address: I2cAddress, i2c: &mut I) -> Result<Ctrl3, I::Error> {
+    pub(crate) async fn read<I: I2c>(address: I2cAddress, i2c: &mut I) -> Result<Ctrl3, I::Error> {
         let mut buf = [0; 1];
         let _ = i2c
             .write_read(address.into(), &[CTRL_REG3], &mut buf)
@@ -30,7 +30,7 @@ impl Ctrl3 {
         Ok(buf[0].into())
     }
 
-    pub async fn write<I: I2c>(
+    pub(crate) async fn write<I: I2c>(
         address: I2cAddress,
         i2c: &mut I,
         reg: Ctrl3,
@@ -38,7 +38,7 @@ impl Ctrl3 {
         Ok(i2c.write(address.into(), &[CTRL_REG3, reg.into()]).await?)
     }
 
-    pub async fn modify<I: I2c, F: FnOnce(&mut Ctrl3)>(
+    pub(crate) async fn modify<I: I2c, F: FnOnce(&mut Ctrl3)>(
         address: I2cAddress,
         i2c: &mut I,
         modify: F,

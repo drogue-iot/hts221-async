@@ -3,7 +3,7 @@ use embedded_hal_async::i2c::*;
 
 const STATUS: u8 = 0x27;
 
-pub struct Status {
+pub(crate) struct Status {
     temperature_available: bool,
     humidity_available: bool,
 }
@@ -15,14 +15,17 @@ impl Status {
         Ok(buf[0].into())
     }
 
+    #[allow(dead_code)]
     pub fn temperature_available(&self) -> bool {
         self.temperature_available
     }
 
+    #[allow(dead_code)]
     pub fn humidity_available(&self) -> bool {
         self.humidity_available
     }
 
+    #[allow(dead_code)]
     pub fn any_available(&self) -> bool {
         self.temperature_available || self.humidity_available
     }

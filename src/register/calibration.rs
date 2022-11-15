@@ -1,4 +1,4 @@
-use super::super::{I2cAddress, Celsius, Temperature};
+use super::super::{Celsius, I2cAddress, Temperature};
 use embedded_hal_async::i2c::*;
 
 // 16-byte block of calibration at 0x30 with high bit for auto-increment
@@ -10,7 +10,10 @@ pub struct Calibration {
 }
 
 impl Calibration {
-    pub async fn read<I: I2c>(address: I2cAddress, i2c: &mut I) -> Result<Calibration, I::Error> {
+    pub(crate) async fn read<I: I2c>(
+        address: I2cAddress,
+        i2c: &mut I,
+    ) -> Result<Calibration, I::Error> {
         let mut buf = [0; 16];
         let _ = i2c
             .write_read(address.into(), &[CALIBRATION_16], &mut buf)

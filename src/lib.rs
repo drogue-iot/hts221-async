@@ -1,14 +1,16 @@
 #![no_std]
 #![feature(type_alias_impl_trait)]
+#![doc = include_str!("../README.md")]
+#![warn(missing_docs)]
 
 use core::fmt::{LowerHex, UpperHex};
 use core::{
     fmt::{Debug, Display, Formatter},
-    future::Future,
     marker::PhantomData,
     ops::{Add, Div, Sub},
 };
 use embedded_hal_async::i2c::*;
+use register::who_am_i::WhoAmI;
 use register::{
     calibration::*,
     ctrl1::{BlockDataUpdate, Ctrl1, OutputDataRate},
@@ -21,13 +23,19 @@ use register::{
 
 mod register;
 
-pub const ADDR: u8 = 0x5F;
+const ADDR: u8 = 0x5F;
 
+/// Error returned by Hts221 driver
 pub enum Hts221Error<E> {
+    /// Error from I2C.
     I2c(E),
+    /// Attempting to read before calibration.
     NotCalibrated,
+    /// Not the expected sensor device
+    InvalidSensor,
 }
 
+/// An instance of the HTS221 driver using I2C transport from embedded-hal-async.
 pub struct Hts221<I>
 where
     I: I2c<SevenBitAddress> + 'static,
@@ -43,6 +51,7 @@ where
     I: I2c<SevenBitAddress> + 'static,
     <I as ErrorType>::Error: Send,
 {
+    /// Create a new instance of the driver using a given I2C peripheral.
     pub fn new(i2c: I) -> Self {
         Self {
             i2c,
@@ -51,7 +60,12 @@ where
         }
     }
 
+    /// Initialize the driver. Must be run before reading sensor values.
     pub async fn initialize(&mut self) -> Result<(), Hts221Error<I::Error>> {
+        let addr = WhoAmI::read(self.address, &mut self.i2c).await?;
+        if addr != self.address {
+            return Err(Hts221Error::InvalidSensor);
+        }
         Ctrl2::modify(self.address, &mut self.i2c, |reg| {
             reg.boot();
         })
@@ -85,6 +99,7 @@ where
         Ok(())
     }
 
+    /// Read sensor values from driver.
     pub async fn read(&mut self) -> Result<SensorAcquisition<Celsius>, Hts221Error<I::Error>> {
         if let Some(calibration) = &self.calibration {
             let t_out = Tout::read(self.address, &mut self.i2c).await? as i16;
@@ -113,7 +128,7 @@ where
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct I2cAddress(u8);
+pub(crate) struct I2cAddress(u8);
 
 impl I2cAddress {
     pub fn new(val: u8) -> Self {
@@ -147,6 +162,7 @@ impl UpperHex for I2cAddress {
 
 /// Trait representing a temperature scale.
 pub trait TemperatureScale: Send {
+    /// Letter describing temperature
     const LETTER: char;
 }
 
@@ -244,19 +260,21 @@ impl<S: TemperatureScale> defmt::Format for Temperature<S> {
 impl<S: TemperatureScale> Copy for Temperature<S> {}
 
 impl<S: TemperatureScale> Temperature<S> {
-    pub fn new(value: f32) -> Self {
+    fn new(value: f32) -> Self {
         Self {
             value,
             _marker: PhantomData::default(),
         }
     }
 
+    /// Read the raw value.
     pub fn raw_value(&self) -> f32 {
         self.value
     }
 }
 
 impl Temperature<Celsius> {
+    /// Convert celsius into fahrenheit
     pub fn into_fahrenheit(self) -> Temperature<Fahrenheit> {
         Temperature::new((self.value * 9.0 / 5.0) + 32.0)
     }
@@ -313,9 +331,12 @@ impl<S: TemperatureScale> Display for Temperature<S> {
     }
 }
 
+/// Values read from the driver with the given scale.
 #[derive(Copy, Clone)]
 pub struct SensorAcquisition<S: TemperatureScale> {
+    /// Sensor temperature value.
     pub temperature: Temperature<S>,
+    /// Relative humidity.
     pub relative_humidity: f32,
 }
 
