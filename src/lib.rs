@@ -62,10 +62,6 @@ where
 
     /// Initialize the driver. Must be run before reading sensor values.
     pub async fn initialize(&mut self) -> Result<(), Hts221Error<I::Error>> {
-        let addr = WhoAmI::read(self.address, &mut self.i2c).await?;
-        if addr != self.address {
-            return Err(Hts221Error::InvalidSensor);
-        }
         Ctrl2::modify(self.address, &mut self.i2c, |reg| {
             reg.boot();
         })
