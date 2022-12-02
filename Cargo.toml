@@ -1,6 +1,6 @@
 [package]
 name = "hts221-async"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
@@ -12,5 +12,5 @@ categories = [
 ]
 
 [dependencies]
-embedded-hal-async = "0.1.0-alpha.3"
+embedded-hal-async = "0.2.0-alpha.0"
 defmt = { version = "0.3", optional = true }
