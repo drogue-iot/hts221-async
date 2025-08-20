@@ -12,5 +12,5 @@ categories = [
 ]
 
 [dependencies]
-embedded-hal-async = "0.2.0-alpha.0"
+embedded-hal-async = "1.0.0"
 defmt = { version = "0.3", optional = true }
